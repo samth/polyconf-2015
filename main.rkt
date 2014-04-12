@@ -15,7 +15,7 @@
        '(("Sam Tobin-Hochstadt" "Indiana University"))
        "April 15, 2014    EPFL")
 (set-page-numbers-visible! #t)
-(do-start? #f)
+(do-start? #t)
 
 
 (code-colorize-enabled #t)
@@ -48,8 +48,13 @@
 (slide #:layout 'center
        (scale (t "“whipitupitude” —  Larry Wall") 1.6))
 
+(require "class-slide.rkt")
+(class-slide '(1 2 3 4))
+
 
 (tslide* "Enter Typed Racket")
+
+(class-slide '(5))
 
 (define-syntax-rule (pslide/title e . rest)
   (pslide #:go (coord 0.05 0.05 'lc)
@@ -59,14 +64,17 @@
 (define (titlet s)
   (t/quat s size2))
 
-(pslide/title "Typed Racket Goals"
-        #:go (coord 0.3 0.3)
-        (shadow-frame (t "Typed sister language to Racket"))
-        #:go (coord 0.45 0.5)
-        (shadow-frame (t "Sound interoperability with untyped code"))
-        #:go (coord 0.6 0.7)
-        (shadow-frame (t "Easy porting of existing programs and idioms"))
-        )
+(pslide/title 
+ "Typed Racket Goals"
+ ;; FIXME: use `cascade` here, but needs lt instead of cc in bounding box
+ #:go (coord 0.3 0.3)
+ (shadow-frame (t "Typed sister language to Racket"))
+ #:go (coord 0.45 0.5)
+ (shadow-frame (t "Sound interoperability with untyped code"))
+ #:go (coord 0.6 0.7)
+ (shadow-frame (t "Easy porting of existing programs and idioms"))
+ )
+
 
 (tslide* "Typed Racket in 3 Slides")
 
@@ -74,6 +82,118 @@
 
 (tslide* "Idiomatic Types")
 
+(slide/staged [one many after] #:title (titlet "How do Racket programmers think?")
+       (hc-append
+        (pict-case 
+         stage-name #:combine cc-superimpose
+         [(one) (t/cant "Racket")]
+         [(many after) (vc-append 
+                  (t/cant "Ruby")
+                  (t/cant "Python")
+                  (t/cant "Racket")
+                  (t/cant "JavaScript")
+                  (t/cant "Lua"))])
+        (t/cant " programs are not secretly ")
+        (pict-case
+         stage-name #:combine cc-superimpose
+         [(one) (t/cant "Scala")]
+         [(many after) (vc-append (t/cant "Java")
+                            (t/cant "ML")
+                            (t/cant "Scala")
+                            (t/cant "Haskell")
+                            (t/cant "C++"))])
+        (t/cant " programs")
+        )
+       (blank 30)
+       (pict-case
+        stage-name
+        [(after)
+         (t "Consider the native idioms of a language")]
+        [else (blank)]))
+
+(start)
+
+(require "peano.rkt" "combine.rkt")
+
+(peano1) (combine1)
+(peano2) (combine2)
+
+(define t/dosis t/cant)
+
+(pslide/title
+ "Mixins in the DrRacket IDE"
+ #:go (coord 0.0 0.55 'lc)
+ (parameterize ([current-font-size 25])
+   (code
+    (define drracket-frame%
+      (online-expand-frame-mixin
+       (frame-mixin
+        (drracket:frame:mixin
+         (drracket:frame:basics-mixin 
+          (frame:size-pref-mixin
+           (frame:searchable-text-mixin 
+            (frame:searchable-mixin
+             (frame:text-info-mixin 
+              (frame:delegate-mixin
+               (frame:status-line-mixin
+                (frame:info-mixin
+                 (frame:text-mixin
+                  (frame:editor-mixin
+                   (frame:standard-menus-mixin
+                    (frame:register-group-mixin
+                     (frame:focus-table-mixin
+                      (frame:basic-mixin
+                       frame%))))))))))))))))))))
+ #:go (coord 0.5 0.45 'lc)
+ (shadow-frame
+  (vl-append
+   (t/dosis "Layered development" 35)
+   (t/dosis "DrRacket frame: 17 mixins" 35)
+   (t/dosis "≥ 49 mixins in codebase" 35))))
+
+(define (esq-text)              
+  (code
+   (define-type Esq-Text%
+     (Class #:implements Text%
+            [new-prompt (-> Void)]
+            [output (String -> Void)]
+            [reset (-> Void)]))))
+(define (mixin-ty)
+  (code
+   (: esq-mixin
+      (All (r #:row)
+           (-> (Class #:row-var r #:implements Text%)
+               (Class #:row-var r #:implements Esq-Text%))))))
+
+(define (mixin-impl)
+  (code
+   (code:comment "add REPL functions to `base-class`")
+   (define (esq-mixin base-class)
+     (class base-class
+       (super-new)
+       (inherit insert last-position get-text erase)
+       ||
+       (define/public (new-prompt) ...)
+       (define/public (output s) ...)
+       (define/public (reset) ...)))))
+
+(slide #:title (titlet "Mixins in Racket")
+       #:layout 'center
+       (parameterize ([current-font-size 25])
+         (smod #:name "racket-esq"
+               (ghost (esq-text))
+               (ghost (mixin-ty))
+               (mixin-impl))))
+
+(slide #:title (titlet "Mixins in Typed Racket")
+       #:layout 'center
+       (parameterize ([current-font-size 25])
+         (tmod #:name "racket-esq"
+               (esq-text)
+               (mixin-ty)
+               (mixin-impl))))
+
+;(start)
 ;; Occurrence Typing + Classes
 
 (tslide* "Effective Contracts")
@@ -95,11 +215,41 @@
 
 (tslide* "Future Challenges")
 
-(slide #:title (titlet "Polymorphic Contracts"))
+(define id-use
+  (code (require/typed poly [id (All (a) a -> a)])
+        (id 5)))
 
-(slide #:title (titlet "New Compiler Techniques"))
+(slide #:title (titlet "Polymorphic Contracts")
+       #:layout 'center
+       (blank 30)
+       (smod #:name "poly"  #:width (pict-width id-use)
+             (code
+              (define (id x) 
+                (cond [(number? x)
+                       (+ x 1)]
+                      [else x]))))
+       (tmod #:name "checked"
+             id-use)
+       (shadow-frame (t/cant "A clear error")))
 
-(slide #:title (titlet "Stronger Type Systems"))
+(slide #:title (titlet "Polymorphic Contracts")
+       #:layout 'center
+       (blank 30)
+       (smod #:name "poly" #:width (pict-width id-use)
+             (code
+              (define (id x) 
+                (cond [(number? x)
+                       (display x) x]
+                      [else x]))))
+       (tmod #:name "checked"
+             id-use)
+       (shadow-frame (t/cant "What should this do?")))
+
+(slide #:title (titlet "New Compiler Techniques")
+       ;; insert Dyla paper, staged: bar chart
+       )
+
+;(slide #:title (titlet "Stronger Type Systems"))
 
 
 (define (hl p) (cc-superimpose (inset (cellophane (colorize (filled-rectangle (pict-width p) (pict-height p)) "pink") .7) -20)

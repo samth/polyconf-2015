@@ -191,13 +191,13 @@
 
 (define-syntax-rule (tmod . args)
   (parameterize ([current-block-background-color "Bisque"]
-                 [current-outline-color "black"])
-    (transparent-block (mod/lang "typed/racket   " #:name-frame (name-back "black") . args))))
+                 [current-outline-color "blue"])
+    (transparent-block (mod/lang "typed/racket   " #:name-frame (name-back "blue") . args))))
 
 (define-syntax-rule (smod . args)
   (parameterize ([current-block-background-color "Azure"]
-                 [current-outline-color "black"])    
-    (transparent-block (mod/lang "      racket   " #:name-frame (name-back "black") . args))))
+                 [current-outline-color "Tomato"])    
+    (transparent-block (mod/lang "      racket   " #:name-frame (name-back "Tomato") . args))))
 
 (define-syntax-rule (red-block . args)
   (parameterize ([current-block-background-color "Tomato"]
