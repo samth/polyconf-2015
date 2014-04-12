@@ -1,0 +1,18 @@
+[submodule "chaperones-talk"]
+	path = chaperones-talk
+	url = ./chaperones-talk/
+[submodule "classes-oopsla12"]
+	path = classes-oopsla12
+	url = ./classes-oopsla12/
+[submodule "continuations"]
+	path = continuations
+	url = ./continuations/
+[submodule "oc-oopsla12"]
+	path = oc-oopsla12
+	url = ./oc-oopsla12/
+[submodule "padl12"]
+	path = padl12
+	url = ./padl12/
+[submodule "pldi-2011"]
+	path = pldi-2011
+	url = ./pldi-2011/
