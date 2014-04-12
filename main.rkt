@@ -82,27 +82,40 @@
 
 (tslide* "Idiomatic Types")
 
+(define narrow1 (t/cant "Racket"))
+(define wide1 (t/cant "JavaScript"))
+(define narrow2 (t/cant "Scala"))
+(define wide2 (t/cant "Haskell"))
+(define x-diff1 (- (pict-width wide1) (pict-width narrow1)))
+(define x-diff2 (- (pict-width wide2) (pict-width narrow2)))
+
 (slide/staged [one many after] #:title (titlet "How do Racket programmers think?")
        (hc-append
         (pict-case 
          stage-name #:combine cc-superimpose
          [(one) (t/cant "Racket")]
-         [(many after) (vc-append 
-                  (t/cant "Ruby")
-                  (t/cant "Python")
-                  (t/cant "Racket")
-                  (t/cant "JavaScript")
-                  (t/cant "Lua"))])
+         [(many after) 
+          (inset 
+           (vc-append 
+            (t/cant "Ruby")
+            (t/cant "Python")
+            (t/cant "Racket")
+            (t/cant "JavaScript")
+            (t/cant "Lua"))
+           (/ x-diff1 -2) 0)])
         (t/cant " programs are not secretly ")
         (pict-case
          stage-name #:combine cc-superimpose
          [(one) (t/cant "Scala")]
-         [(many after) (vc-append (t/cant "Java")
-                            (t/cant "ML")
-                            (t/cant "Scala")
-                            (t/cant "Haskell")
-                            (t/cant "C++"))])
-        (t/cant " programs")
+         [(many after) 
+          (inset 
+           (vc-append (t/cant "Java")
+                      (t/cant "ML")
+                      (t/cant "Scala")
+                      (t/cant "Haskell")
+                      (t/cant "C++"))
+           (/ x-diff2 -2))])
+         (t/cant " programs")
         )
        (blank 30)
        (pict-case
@@ -112,6 +125,48 @@
         [else (blank)]))
 
 (start)
+
+(define forall (lift-above-baseline (code ∀) -3))
+
+(slide/staged 
+ [occur union varar #;local]
+ #:title (titlet "Types for Racket Idioms")
+ (tmod #:name (symbol->string stage-name)
+  (pict-case stage-name
+   [(occur)
+    (code (: f (Any -> Number))
+          (define (f x)
+            (if (number? x)
+                (add1 x)
+                0)))]
+   [(varar) 
+    (code
+     (: wrap (#,forall (B A ...)
+               ((A ... -> B) -> (A ... -> B))))
+     (define (wrap f)
+       (lambda args
+         (printf "args are: ~a\n" args)
+         (apply f args))))]
+   [(refine)
+    (code
+     (: check (String -> (Refinement sql-safe?)))
+     (define (check s)
+       (if (sql-safe? s)
+           s
+           (error "unsafe string!"))))]
+   [(local) 
+    (code
+     (define x 1)
+     (define y 2)
+     (map - (list x y)))]
+   [(union)
+    (code
+     (define-type Peano (U 'Zero (List 'S Peano)))
+     (: sizeof (BT -> Number))
+     (define (convert n)
+       (cond [(symbol? n) 0]
+             [else (add1 (convert (rest n)))])))])))
+
 
 (require "peano.rkt" "combine.rkt")
 
@@ -197,6 +252,11 @@
 ;; Occurrence Typing + Classes
 
 (tslide* "Effective Contracts")
+
+(slide #:title (titlet "Contracts as a tool")
+       (t "Contracts are the fundamental component of gradual typing")
+       
+       )
 
 ;; Chaperones + Continuations + Classes
 
