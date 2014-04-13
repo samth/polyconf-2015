@@ -5,7 +5,7 @@
          (only-in slideshow/slide title-size)
           "config.ss"
          (except-in "beamer.ss" title) "lib.ss" racket/gui  "thanks.ss" 
-         "tslide.ss" lang-slide
+         "tslide.ss" lang-slide "contracts.rkt"
          "ts-intro.rkt" "stages.rkt"
          "continuations/helper.rkt"
          racket/runtime-path (except-in mzlib/etc identity) unstable/gui/slideshow)
@@ -167,45 +167,6 @@
        (cond [(symbol? n) 0]
              [else (add1 (convert (rest n)))])))])))
 
-
-(require "peano.rkt" "combine.rkt")
-
-(peano1) (combine1)
-(peano2) (combine2)
-
-(define t/dosis t/cant)
-
-(pslide/title
- "Mixins in the DrRacket IDE"
- #:go (coord 0.0 0.55 'lc)
- (parameterize ([current-font-size 25])
-   (code
-    (define drracket-frame%
-      (online-expand-frame-mixin
-       (frame-mixin
-        (drracket:frame:mixin
-         (drracket:frame:basics-mixin 
-          (frame:size-pref-mixin
-           (frame:searchable-text-mixin 
-            (frame:searchable-mixin
-             (frame:text-info-mixin 
-              (frame:delegate-mixin
-               (frame:status-line-mixin
-                (frame:info-mixin
-                 (frame:text-mixin
-                  (frame:editor-mixin
-                   (frame:standard-menus-mixin
-                    (frame:register-group-mixin
-                     (frame:focus-table-mixin
-                      (frame:basic-mixin
-                       frame%))))))))))))))))))))
- #:go (coord 0.5 0.45 'lc)
- (shadow-frame
-  (vl-append
-   (t/dosis "Layered development" 35)
-   (t/dosis "DrRacket frame: 17 mixins" 35)
-   (t/dosis "≥ 49 mixins in codebase" 35))))
-
 (define (esq-text)              
   (code
    (define-type Esq-Text%
@@ -248,15 +209,148 @@
                (mixin-ty)
                (mixin-impl))))
 
+
+(require "peano.rkt" "combine.rkt")
+
+(peano1) (combine1)
+(peano2) (combine2)
+
+(define t/dosis t/cant)
+
+(pslide/title
+ "Mixins in the DrRacket IDE"
+ #:go (coord 0.0 0.55 'lc)
+ (parameterize ([current-font-size 25])
+   (code
+    (define drracket-frame%
+      (online-expand-frame-mixin
+       (frame-mixin
+        (drracket:frame:mixin
+         (drracket:frame:basics-mixin 
+          (frame:size-pref-mixin
+           (frame:searchable-text-mixin 
+            (frame:searchable-mixin
+             (frame:text-info-mixin 
+              (frame:delegate-mixin
+               (frame:status-line-mixin
+                (frame:info-mixin
+                 (frame:text-mixin
+                  (frame:editor-mixin
+                   (frame:standard-menus-mixin
+                    (frame:register-group-mixin
+                     (frame:focus-table-mixin
+                      (frame:basic-mixin
+                       frame%))))))))))))))))))))
+ #:go (coord 0.5 0.45 'lc)
+ (shadow-frame
+  (vl-append
+   (t/dosis "Layered development" 35)
+   (t/dosis "DrRacket frame: 17 mixins" 35)
+   (t/dosis "≥ 49 mixins in codebase" 35))))
+
+
 ;(start)
 ;; Occurrence Typing + Classes
 
 (tslide* "Effective Contracts")
 
-(slide #:title (titlet "Contracts as a tool")
-       (t "Contracts are the fundamental component of gradual typing")
-       
+(multi-sound)
+
+(define big-addx
+  (code
+   (provide addx-c)
+   (define (addx-c x)
+     (if (number? x)
+         (contract (addx x) (-> number? number?))
+         (error "blame the client")))
+   (define (addx x) (lambda (y) (+ x y)))))
+
+(define server3
+  (tmod #:name "server" #:sizeof big-addx
+        (code
+         (: addx (Number -> (Number -> Number)))
+         ||
+         (define (addx x) (lambda (y) (+ x y))))))
+
+
+(slide #:title (titlet "Contracts for functions")
+       server3)
+
+(slide #:title (titlet "Contracts for functions")
+       (smod #:name "server" #:sizeof big-addx
+        (code
+         (provide/contract 
+          [addx (-> number? (-> number? number?))])
+         (define (addx x) (lambda (y) (+ x y))))))
+
+(slide #:title (titlet "Contracts for functions")
+       (smod #:name "server"
+             big-addx))
+
+(slide/staged [one two]
+ #:title (titlet "Contracts for vectors")
+ (pict-case 
+  stage-name
+  [(one)
+   (tmod #:name "server"
+         (code
+          (provide primes)
+          (: primes : (Vectorof Integer))
+          (define primes (vector 2 3 5 7 11))))]
+  [(two)
+   (smod #:name "server"
+         (code
+          (provide/contract
+           [primes (vector/c integer?)])
+          (define primes (vector 2 3 5 7 11))))]
+  )
+ (pict-case 
+  stage-name
+  [(one) (blank)]
+  [(two) (hbl-append (t/cant "But how does ") (code vector/c) (t " work?"))]))
+(start)
+
+(slide/staged 
+ [one two]
+ #:title "Chaperones"
+ (smod 
+  #:name "vector/c"
+  (pict-case 
+  stage-name
+  [(one) (code (chaperone-vector 
+                primes
+                (lambda (v i res) 
+                  (unless (number? res) (error "blame"))
+                  res)
+                ...))]
+  [(two) (code (chaperone-vector 
+                primes
+                (lambda (v i res) 
+                  (unless (number? res) (error "blame"))
+                  17)
+                ...))]))
+ (pict-case 
+  stage-name
+  [(one) (blank)]
+  [(two) (t/cant "Is this ok?")])
+)
+
+(slide #:title "The Chaperone Invariant"
+       (shadow-frame
+        (para "A chaperoned value behaves like the original value, but with extra errors."))
        )
+
+(slide #:title "Chaperones vs Impersonators"
+       #:layout 'center
+       (para "Chaperones")
+       (subitem "Less expressive")
+       (subitem "Apply to more values")
+       (blank 20)
+       (para "Impersonators")
+       (subitem "No invariants")
+       (subitem "Only apply to mutable values"))
+
+(start)
 
 ;; Chaperones + Continuations + Classes
 
@@ -271,6 +365,18 @@
 (tslide* "And more ...")
 
 (slide #:title (titlet "Proof Techniques"))
+
+    (slide/staged
+     [one two three]
+     #:title (title-t "The Blame Theorem")
+     (pict-case
+      stage-name       
+       [(one) (para "If the program raises a contract error, the blame is not assigned to a typed module.")]
+       [(two) (para "Well-typed modules can't get blamed.")]
+       [(three) (mini-slide (para "Allows local reasoning about typed modules, without changing untyped modules.")
+                            (para "Choose how much static checking you want."))]))
+   
+
 (slide #:title (titlet "Developer Tools"))
 
 (tslide* "Future Challenges")

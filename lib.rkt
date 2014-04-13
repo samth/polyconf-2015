@@ -12,7 +12,7 @@
 (provide (all-defined-out))
 
 (define purple-color (make-object color% 150 0 150))
-(define title-text-size 60)
+(define title-text-size 65)
 (define large-text-size 48)
 (define normal-text-size 36)
 (define small-text-size 24)
