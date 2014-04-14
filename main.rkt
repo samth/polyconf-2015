@@ -15,7 +15,7 @@
        '(("Sam Tobin-Hochstadt" "Indiana University"))
        "April 15, 2014    EPFL")
 (set-page-numbers-visible! #t)
-(do-start? #t)
+(do-start? #f)
 
 
 (code-colorize-enabled #t)
@@ -226,7 +226,7 @@
 ;(start)
 ;; Occurrence Typing + Classes
 
-(slide #:title (titlet "Lessons")
+(slide #:title (title-t "Lessons")
        (para "Existing idioms are a source of type system ideas")
        (blank 50)
        (para "Repeated in TypeScript, Typed Clojure, Hack, ..."))
@@ -348,7 +348,7 @@
 
 
 (slide #:title (titlet "Lessons")
-       (para "Proxy mechanisms must be expressive while respective invariants")
+       (para "Proxy mechanisms must be expressive while respecting invariants")
        (blank 50)
        (para "Now applied in JavaScript proxies"))
 

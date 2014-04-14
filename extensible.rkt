@@ -235,7 +235,7 @@
  (bitmap "padl12/macro-benchmarks.png")
  (t "Smaller is better"))
 
-(slide #:title (titlet "Lessons")
+(slide #:title (title-t "Lessons")
        (para "Language extensibility makes compilers into libraries")
        (blank 50)
        (para "See LMS, Scala macros, ..."))
