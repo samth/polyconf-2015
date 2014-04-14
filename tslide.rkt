@@ -2,8 +2,15 @@
 
 (require unstable/gui/slideshow scheme/class "t-slideshow.ss" slideshow 
          (only-in scheme/gui color%)
+         unstable/gui/ppict unstable/gui/pslide
+         "continuations/helper.rkt"
          (except-in "beamer.ss" title) "lib.ss")
-(provide tslide subtitle-pict)
+(provide pslide/title tslide subtitle-pict tslide*)
+
+(define-syntax-rule (pslide/title e . rest)
+  (pslide #:go (coord 0.05 0.05 'lc)
+        (t/quat e size2)
+        . rest))
 
 (: subtitle-pict : (String -> Pict))
 (define (subtitle-pict s)
@@ -33,3 +40,14 @@
                        (list (text t (current-title-font) title-text-size))
                        (map row subs)))))))
 
+
+(define (tslide* s [papers #f])
+  (pslide 
+   #:go (coord 0.5 0.5)
+   (cond [(pict? s) s]
+         [else (t/section s)])
+   #:go (coord 0.0 0.95 'lc)
+   (cond [(pict? papers) papers]
+         [(list? papers) (apply vl-append (for/list ([p papers]) (t/cant p 24)))]
+         [papers (t/cant papers 24)]
+         [else (blank)])))

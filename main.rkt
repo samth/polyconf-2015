@@ -21,32 +21,7 @@
 (code-colorize-enabled #t)
 ;(slide (langs-pict #t))
 
-(define (tslide* s)
-  (pslide 
-   #:go (coord 0.5 0.5)
-   (t/section s)))
-
-(tslide* "The Rise of Dynamic Languages")
-
-(slide #:title "Angry Birds")
-
-(slide #:title "PyMOL")
-
-(slide #:title "Facebook")
-
-(slide #:title "Google Maps")
-
-(slide #:title "Sweden Pensions")
-
-(slide #:title "The Last of Us")
-
-(slide #:layout 'center
-       (scale (t "“whipitupitude” —  Larry Wall") 1.6))
-
-(tslide* "So what's the problem?")
-
-(slide #:layout 'center
-       (scale (t "“whipitupitude” —  Larry Wall") 1.6))
+(dynamic-require "intro.rkt" #f)
 
 (require "class-slide.rkt")
 (class-slide '(1 2 3 4))
@@ -56,10 +31,6 @@
 
 (class-slide '(5))
 
-(define-syntax-rule (pslide/title e . rest)
-  (pslide #:go (coord 0.05 0.05 'lc)
-        (t/quat e size2)
-        . rest))
 
 (define (titlet s)
   (t/quat s size2))
@@ -80,7 +51,9 @@
 
 (ts-intro)
 
-(tslide* "Idiomatic Types")
+(tslide* "Idiomatic Types"
+         '("With Takikawa, Strickland, Felleisen"
+           "[POPL 08, ESOP 09, ICFP 10, OOPSLA 12, ESOP 13]"))
 
 (define narrow1 (t/cant "Racket"))
 (define wide1 (t/cant "JavaScript"))
@@ -213,10 +186,11 @@
 (require "peano.rkt" "combine.rkt")
 
 (peano1) (combine1)
-(peano2) (combine2)
+(peano2) ;(combine2)
 
 (define t/dosis t/cant)
 
+#;
 (pslide/title
  "Mixins in the DrRacket IDE"
  #:go (coord 0.0 0.55 'lc)
@@ -252,7 +226,14 @@
 ;(start)
 ;; Occurrence Typing + Classes
 
-(tslide* "Effective Contracts")
+(slide #:title (titlet "Lessons")
+       (para "Existing idioms are a source of type system ideas")
+       (blank 50)
+       (para "Repeated in TypeScript, Typed Clojure, Hack, ..."))
+
+(tslide* "Effective Contracts"
+         '("With Takikawa, Strickland, Flatt, Findler, Felleisen"
+           "[DLS 06, ESOP 13, OOPSLA 12]"))
 
 (multi-sound)
 
@@ -312,7 +293,7 @@
 
 (slide/staged 
  [one two]
- #:title "Chaperones"
+ #:title (titlet "Chaperones")
  (smod 
   #:name "vector/c"
   (pict-case 
@@ -335,12 +316,13 @@
   [(two) (t/cant "Is this ok?")])
 )
 
-(slide #:title "The Chaperone Invariant"
+(slide #:title (titlet "The Chaperone Invariant")
        (shadow-frame
-        (para "A chaperoned value behaves like the original value, but with extra errors."))
+        (para "A chaperoned value behaves like the original value, but with extra errors.")
+        #:shadow-descent 10)
        )
 
-(slide #:title "Chaperones vs Impersonators"
+(slide #:title (titlet "Chaperones vs Impersonators")
        #:layout 'center
        (para "Chaperones")
        (subitem "Less expressive")
@@ -350,34 +332,54 @@
        (subitem "No invariants")
        (subitem "Only apply to mutable values"))
 
+(pslide/title 
+ "Further Extension"
+ #:go (cascade 120 'auto)
+ (shadow-frame (t "Classes, Mixins, Objects")
+               #:shadow-descent 20)
+ (shadow-frame (t "Delimited Continuations")
+               #:shadow-descent 20)
+ (shadow-frame (t "Abstract Data Types")
+               #:shadow-descent 20)
+ (shadow-frame (t "Channels and Events")
+               #:shadow-descent 20))
+
 (start)
+
+
+(slide #:title (titlet "Lessons")
+       (para "Proxy mechanisms must be expressive while respective invariants")
+       (blank 50)
+       (para "Now applied in JavaScript proxies"))
 
 ;; Chaperones + Continuations + Classes
 
-(tslide* "Extensible Languages")
-
-;; PLDI paper
-
-(tslide* "Fast Runtimes")
+(dynamic-require "extensible.rkt" #f)
 
 ;; PLDI + PADL
 
-(tslide* "And more ...")
+(tslide* "And more ..."
+         '("With St-Amour, Dimoulas, Felleisen"
+           "[DLS 06, ESOP 12, OOPSLA 12]"))
 
-(slide #:title (titlet "Proof Techniques"))
+;(slide #:title (titlet "Proof Techniques"))
 
     (slide/staged
-     [one two three]
-     #:title (title-t "The Blame Theorem")
+     [one two three four]
+     #:title (title-t "Proofs and Techniques")
      (pict-case
       stage-name       
        [(one) (para "If the program raises a contract error, the blame is not assigned to a typed module.")]
        [(two) (para "Well-typed modules can't get blamed.")]
-       [(three) (mini-slide (para "Allows local reasoning about typed modules, without changing untyped modules.")
-                            (para "Choose how much static checking you want."))]))
+       [(three) (mini-slide
+                 (para "Allows local reasoning about typed modules, without changing untyped modules.")
+                 (para "Choose how much static checking you want."))]
+       [(four) (mini-slide
+                (para "Closely connected to contract semantics")
+                (para "Proved by showing that all communication is monitored"))]))
    
-
-(slide #:title (titlet "Developer Tools"))
+(require "oc.rkt")
+(do-prng)
 
 (tslide* "Future Challenges")
 
@@ -411,9 +413,15 @@
              id-use)
        (shadow-frame (t/cant "What should this do?")))
 
-(slide #:title (titlet "New Compiler Techniques")
-       ;; insert Dyla paper, staged: bar chart
-       )
+(pslide/title
+ "New Compiler Techniques"
+ #:go (coord .1 .1 'lt)
+ (scale-to-fit (bitmap "pycket1.png") 1000 1200)
+ #:next #:go (coord 0 .4 'lt)
+ (scale-to-fit (bitmap "pycket-bench.png") (* 2/3 1400) (* 2/3 500))
+ )
+
+(start)
 
 ;(slide #:title (titlet "Stronger Type Systems"))
 
@@ -948,7 +956,8 @@
          (shadow-frame
           (vl-append
            (t "Typed Racket is not just a nice language")
-           (t "... it's also informing PL research at every level")))
+           (t "... it's also informing PL research at every level"))
+          #:shadow-descent 10)
          (blank 15)
          (t "Runtimes, proofs, compilers, metaprogramming, contracts")
          (blank 25)
