@@ -1,7 +1,7 @@
 #lang slideshow
 
 (require "lib.ss" slideshow/code unstable/gui/slideshow "tslide.ss" "config.ss"
-         "continuations/helper.rkt")
+         "helper.rkt")
 (provide (all-defined-out))
 
 (define (title-t s)

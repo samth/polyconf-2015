@@ -7,7 +7,7 @@
          (except-in "beamer.ss" title) "lib.ss" racket/gui  "thanks.ss" 
          "tslide.ss" lang-slide "contracts.rkt"
          "ts-intro.rkt" "stages.rkt"
-         "continuations/helper.rkt"
+         "helper.rkt"
          racket/runtime-path (except-in mzlib/etc identity) unstable/gui/slideshow)
 
 (tslide* (vl-append (t/section "Extensible Languages,")

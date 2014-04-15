@@ -3,7 +3,7 @@
 (require unstable/gui/slideshow scheme/class "t-slideshow.ss" slideshow 
          (only-in scheme/gui color%)
          unstable/gui/ppict unstable/gui/pslide
-         "continuations/helper.rkt"
+         "helper.rkt"
          (except-in "beamer.ss" title) "lib.ss")
 (provide pslide/title tslide subtitle-pict tslide*)
 
