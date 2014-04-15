@@ -135,7 +135,7 @@
    [(union)
     (code
      (define-type Peano (U 'Zero (List 'S Peano)))
-     (: sizeof (BT -> Number))
+     (: convert : Peano -> Number)
      (define (convert n)
        (cond [(symbol? n) 0]
              [else (add1 (convert (rest n)))])))])))
