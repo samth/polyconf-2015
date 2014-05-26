@@ -400,12 +400,13 @@
 (start)
 
 
-(slide
- #:title (titlet "Lessons")
+(pslide/title
+ "Lessons"
+ #:go (coord .03 .35 'lc)
  (t/cant "Proxy mechanisms must be expressive while respecting invariants")
- (blank 30)
+ #:go (coord .03 .55 'lc)
  (t/cant "A single mechanism gives the runtime system a chance to optimize")
- (blank 30)
+ #:go (coord .03 .75 'lc)
  (t/cant "Scales to classes/channels/continuations/..."))
 
 ;; Chaperones + Continuations + Classes
@@ -477,7 +478,7 @@
 
 
 
-(slide #:title (hbl-append (titlet "Contracts for ") (code Any))
+(slide #:title (hbl-append (titlet "Contracts for ") (scale (code Any) 1.5))
        #:layout 'center
        (blank 30)
        (tmod #:name "any" #:width (pict-width bv)
