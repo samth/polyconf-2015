@@ -88,8 +88,8 @@
                (ack-def #:typed #f))
          #;(blank 10)
          (tmod #:name "compute" #:sizeof (ack-def)
-               (code (require [ack 
-                               (Integer Integer -> Integer)])
+               (code (require/typed
+                      [ack (Integer Integer -> Integer)])
                      (ack 2 3))))
   ;; both typed
   (slide #:title (title-t "Modules") #:layout 'center

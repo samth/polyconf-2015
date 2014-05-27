@@ -306,7 +306,7 @@
  #:go (coord .5 .5 'cc)
  (code (#,(pict-case stage-name [(lambda1) simple-lam] [(lambda2) big-lam]) 7)) 
  #:go (coord .5 .8 'cc)
- (pict-case stage [(2) (hbl-append (code lambda)  (t/cant " is it's own wrapper mechanism"))]))
+ (pict-case stage [(2) (hbl-append (code lambda)  (t/cant " is its own wrapper mechanism"))]))
 
 (pslide/staged/title [vector1 vector2]
  "What's hard about vectors?"
