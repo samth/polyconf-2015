@@ -5,12 +5,15 @@
          unstable/gui/ppict unstable/gui/pslide
          "helper.rkt"
          (except-in "beamer.ss" title) "lib.ss")
-(provide pslide/title tslide subtitle-pict tslide*)
+(provide pslide/title pslide/staged/title tslide subtitle-pict tslide*)
 
 (define-syntax-rule (pslide/title e . rest)
   (pslide #:go (coord 0.05 0.05 'lc)
         (t/quat e size2)
         . rest))
+(define-syntax-rule (pslide/staged/title [name ...] t arg ...)
+  (staged [name ...] (pslide/title t arg ...)))
+
 
 (: subtitle-pict : (String -> Pict))
 (define (subtitle-pict s)

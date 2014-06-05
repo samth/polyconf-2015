@@ -11,6 +11,7 @@
          icon-assembler title-text-size large-text-size)
 (provide (all-defined-out))
 
+
 (define purple-color (make-object color% 150 0 150))
 (define title-text-size 65)
 (define large-text-size 48)
