@@ -10,6 +10,9 @@
          "helper.rkt"
          racket/runtime-path (except-in mzlib/etc identity) unstable/gui/slideshow)
 
+(require ppict-slide-grid)
+(set-grid-base-pict!)
+
 (pslide
  #:go (coord .5 .5 'cc) 
  (bitmap plt-background-path)
@@ -52,12 +55,14 @@
 (pslide/title 
  "Typed Racket Design Goals"
  ;; FIXME: use `cascade` here, but needs lt instead of cc in bounding box
- #:go (coord 0.3 0.3)
+ #:go (coord 0.05 0.3 'lc)
  (shadow-frame #:shadow-descent 10 (t "Typed sister language to Racket"))
- #:go (coord 0.45 0.5)
- (shadow-frame #:shadow-descent 10 (t "Sound interoperability with untyped code"))
- #:go (coord 0.6 0.7)
+ #:go (coord 0.15 0.5 'lc)
  (shadow-frame #:shadow-descent 10 (t "Easy porting of existing programs and idioms"))
+ #:go (coord 0.25 0.7 'lc)
+ (shadow-frame #:shadow-descent 10 (t "Sound interoperability with untyped code"))
+ #:go (coord 0.35 0.9 'lc)
+ (shadow-frame #:shadow-descent 10 (t "Built entirely as a library"))
  )
 
 
@@ -67,7 +72,7 @@
 
 (tslide* "Typed Racket Demo!")
 
-(tslide* "Idiomatic Types"
+(tslide* "Type System Design"
          '("With Takikawa, Strickland, Felleisen"
            "[POPL 08, ESOP 09, ICFP 10, OOPSLA 12, ESOP 13]"))
 
@@ -248,7 +253,7 @@
 ;       (blank 50)
 ;       (para "Repeated in TypeScript, Typed Clojure, Hack, ..."))
 
-(tslide* "Effective Contracts"
+(tslide* "Interoperation Design"
          '("With Takikawa, Strickland, Flatt, Findler, Felleisen"
            "[DLS 06, ESOP 13, OOPSLA 12]"))
 
@@ -285,7 +290,7 @@
        (smod #:name "server"
              big-addx))
 
-(slide/staged [one demo two]
+(slide/staged [one #;demo #;two]
  #:title (pict-case stage-name 
                     [(one two) (titlet "Contracts for vectors")]
                     [else (blank)])
@@ -315,117 +320,117 @@
 (define simple-lam (red-code (lambda (x) (+ 5 x))))
 (define big-lam (code (lambda (v) (#,simple-lam v))))
 
-(pslide/staged/title [lambda1 lambda2]
- "What's easy about functions?"
- #:go (coord .5 .5 'cc)
- (code (#,(pict-case stage-name [(lambda1) simple-lam] [(lambda2) big-lam]) 7)) 
- #:go (coord .5 .8 'cc)
- (pict-case stage [(2) (hbl-append (code lambda)  (t/cant " is its own wrapper mechanism"))]))
+;; (pslide/staged/title [lambda1 lambda2]
+;;  "What's easy about functions?"
+;;  #:go (coord .5 .5 'cc)
+;;  (code (#,(pict-case stage-name [(lambda1) simple-lam] [(lambda2) big-lam]) 7)) 
+;;  #:go (coord .5 .8 'cc)
+;;  (pict-case stage [(2) (hbl-append (code lambda)  (t/cant " is its own wrapper mechanism"))]))
 
-(pslide/staged/title [vector1 vector2]
- "What's hard about vectors?"
- #:go (coord .5 .5 'cc)
- (code (vector-ref #,(pict-case stage-name [(vector1) (code (vector 1 2 3))] [(vector2) (code (... (vector 1 2 3)))]) 2))
- #:go (coord .5 .8 'cc)
- (hbl-append (code vector)  (t/cant " is not")))
+;; (pslide/staged/title [vector1 vector2]
+;;  "What's hard about vectors?"
+;;  #:go (coord .5 .5 'cc)
+;;  (code (vector-ref #,(pict-case stage-name [(vector1) (code (vector 1 2 3))] [(vector2) (code (... (vector 1 2 3)))]) 2))
+;;  #:go (coord .5 .8 'cc)
+;;  (hbl-append (code vector)  (t/cant " is not")))
 
-(start)
+;; (start)
 
-(tslide* "Enter Chaperones")
+;; (tslide* "Enter Chaperones")
 
-;; HERE
+;; ;; HERE
 
-(slide/staged 
- [one two]
- #:title (titlet "Chaperones")
- (smod 
-  #:name "vector/c"
-  (pict-case 
-  stage-name
-  [(one) (code (chaperone-vector 
-                primes
-                (lambda (v i res) 
-                  (unless (number? res) (error "blame"))
-                  res)
-                ...))]
-  [(two) (code (chaperone-vector 
-                primes
-                (lambda (v i res) 
-                  (unless (number? res) (error "blame"))
-                  17)
-                ...))]))
- (pict-case 
-  stage-name
-  [(one) (blank)]
-  [(two) (t/cant "Is this ok?")])
-)
-
-
-(slide #:title (titlet "The Problem")
-       (para "Data structures have invariants")
-       (smod #:name "boehm"
-        (code (struct tree (x l r))
-              (define (insert x t) ...)))
-       (blank 100)
-       (para "Unrestricted proxies can violate invariants"))
-
-(slide #:title (titlet "The Chaperone Invariant")
-       (shadow-frame
-        (para "A chaperoned value behaves like the original value, but with extra errors.")
-        #:shadow-descent 10)
-       'next
-       (t "Enforced by the runtime system with dynamic checks")
-       )
-
-(pslide/title 
- "Is this invariant always needed?"
- #:go (coord 0.1 .3 'lt)
- (para "No, mutable data has fewer invariants")
- #:next
- #:go  (coord 0.05 0.5 'lc)
- (t/quat "Is this invariant always workable?" size2)
- #:go (coord 0.1 .75 'lt)
- (para "No, sealing contracts are inexpressible")
- )
-
-(slide #:title (titlet "Solution: Chaperones & Impersonators")
-       #:layout 'center
-       (para "Chaperones")
-       (subitem "Less expressive")
-       (subitem "Apply to more values")
-       (blank 20)
-       (para "Impersonators")
-       (subitem "No invariants")
-       (subitem "Only apply to mutable values"))
-
-#;
-(pslide/title 
- "Further Extension"
- #:go (cascade 120 'auto)
- (shadow-frame #:shadow-descent 10 (t "Classes, Mixins, Objects")
-               #:shadow-descent 20)
- (shadow-frame #:shadow-descent 10 (t "Delimited Continuations")
-               #:shadow-descent 20)
- (shadow-frame #:shadow-descent 10 (t "Abstract Data Types")
-               #:shadow-descent 20)
- (shadow-frame #:shadow-descent 10 (t "Channels and Events")
-               #:shadow-descent 20))
-
-(start)
+;; (slide/staged 
+;;  [one two]
+;;  #:title (titlet "Chaperones")
+;;  (smod 
+;;   #:name "vector/c"
+;;   (pict-case 
+;;   stage-name
+;;   [(one) (code (chaperone-vector 
+;;                 primes
+;;                 (lambda (v i res) 
+;;                   (unless (number? res) (error "blame"))
+;;                   res)
+;;                 ...))]
+;;   [(two) (code (chaperone-vector 
+;;                 primes
+;;                 (lambda (v i res) 
+;;                   (unless (number? res) (error "blame"))
+;;                   17)
+;;                 ...))]))
+;;  (pict-case 
+;;   stage-name
+;;   [(one) (blank)]
+;;   [(two) (t/cant "Is this ok?")])
+;; )
 
 
-(pslide/title
- "Lessons"
- #:go (coord .03 .35 'lc)
- (t/cant "Proxy mechanisms must be expressive while respecting invariants")
- #:go (coord .03 .55 'lc)
- (t/cant "A single mechanism gives the runtime system a chance to optimize")
- #:go (coord .03 .75 'lc)
- (t/cant "Scales to classes/channels/continuations/..."))
+;; (slide #:title (titlet "The Problem")
+;;        (para "Data structures have invariants")
+;;        (smod #:name "boehm"
+;;         (code (struct tree (x l r))
+;;               (define (insert x t) ...)))
+;;        (blank 100)
+;;        (para "Unrestricted proxies can violate invariants"))
+
+;; (slide #:title (titlet "The Chaperone Invariant")
+;;        (shadow-frame
+;;         (para "A chaperoned value behaves like the original value, but with extra errors.")
+;;         #:shadow-descent 10)
+;;        'next
+;;        (t "Enforced by the runtime system with dynamic checks")
+;;        )
+
+;; (pslide/title 
+;;  "Is this invariant always needed?"
+;;  #:go (coord 0.1 .3 'lt)
+;;  (para "No, mutable data has fewer invariants")
+;;  #:next
+;;  #:go  (coord 0.05 0.5 'lc)
+;;  (t/quat "Is this invariant always workable?" size2)
+;;  #:go (coord 0.1 .75 'lt)
+;;  (para "No, sealing contracts are inexpressible")
+;;  )
+
+;; (slide #:title (titlet "Solution: Chaperones & Impersonators")
+;;        #:layout 'center
+;;        (para "Chaperones")
+;;        (subitem "Less expressive")
+;;        (subitem "Apply to more values")
+;;        (blank 20)
+;;        (para "Impersonators")
+;;        (subitem "No invariants")
+;;        (subitem "Only apply to mutable values"))
+
+
+;; (pslide/title 
+;;  "Further Extension"
+;;  #:go (cascade 120 'auto)
+;;  (shadow-frame #:shadow-descent 10 (t "Classes, Mixins, Objects")
+;;                #:shadow-descent 20)
+;;  (shadow-frame #:shadow-descent 10 (t "Delimited Continuations")
+;;                #:shadow-descent 20)
+;;  (shadow-frame #:shadow-descent 10 (t "Abstract Data Types")
+;;                #:shadow-descent 20)
+;;  (shadow-frame #:shadow-descent 10 (t "Channels and Events")
+;;                #:shadow-descent 20))
+
+;; (start)
+
+
+;; (pslide/title
+;;  "Lessons"
+;;  #:go (coord .03 .35 'lc)
+;;  (t/cant "Proxy mechanisms must be expressive while respecting invariants")
+;;  #:go (coord .03 .55 'lc)
+;;  (t/cant "A single mechanism gives the runtime system a chance to optimize")
+;;  #:go (coord .03 .75 'lc)
+;;  (t/cant "Scales to classes/channels/continuations/..."))
 
 ;; Chaperones + Continuations + Classes
 
-#;
+
 (dynamic-require "extensible.rkt" #f)
 
 ;; PLDI + PADL
@@ -457,107 +462,142 @@
 
 (tslide* "What is still hard?")
 
-(define id-use
-  (code (require/typed poly [id (All (a) a -> a)])
-        (id 5)))
-
-(slide #:title (titlet "Polymorphic Contracts")
-       #:layout 'center
-       (blank 30)
-       (smod #:name "poly"  #:width (pict-width id-use)
-             (code
-              (define (id x) 
-                (cond [(number? x)
-                       (+ x 1)]
-                      [else x]))))
-       (tmod #:name "checked"
-             id-use)
-       (shadow-frame #:shadow-descent 10 (t/cant "A clear error")))
-
-(slide #:title (titlet "Polymorphic Contracts")
-       #:layout 'center
-       (blank 30)
-       (smod #:name "poly" #:width (pict-width id-use)
-             (code
-              (define (id x) 
-                (cond [(number? x)
-                       (display x) x]
-                      [else x]))))
-       (tmod #:name "checked"
-             id-use)
-       (shadow-frame #:shadow-descent 10 (t/cant "What should this do?")))
-
-(define bv (code (define v (build-vector 10000
-                                         (lambda (i) (random))))))
-
-
-
-(slide #:title (hbl-append (titlet "Contracts for ") (scale (code Any) 1.5))
-       #:layout 'center
-       (blank 30)
-       (tmod #:name "any" #:width (pict-width bv)
-             (code
-              (provide f)
-              (define f : Any 
-                (lambda ([x : Number]) (+ x 1)))))
-       (smod #:name "contracted" #:width (pict-width bv)
-             (code (f 17)))
-       (shadow-frame #:shadow-descent 10 (t/cant "What contract do we generate?")))
-       
-
-
-(slide #:title (titlet "Contract performance")
-       #:layout 'center
-       (blank 30)
-       (smod #:name "vector"
-             (code (define v (build-vector 10000
-                                           (lambda (i) (random))))))
-       (tmod #:name "any" #:width (pict-width bv)
-             (code
-              (require/typed vector
-                             [v (Vectorof Flonum)])
-              (for/sum ([i (in-vector v)])
-                i)))
-       (shadow-frame #:shadow-descent 10 (t/cant "How do we make this fast?")))
-       
-
-#;
-(pslide/title
- "New Compiler Techniques"
+(pslide
+ #:go (coord .5 .5 'cc)
+ (t/section "Types")
  #:go (coord .1 .1 'lt)
- (scale-to-fit (bitmap "pycket1.png") 1000 1200)
- #:next #:go (coord 0 .4 'lt)
- (scale-to-fit (bitmap "pycket-bench.png") (* 2/3 1400) (* 2/3 500))
+ (t/cant "Nominal Classes" size3)
+ #:go (coord .6 .7 'cc)
+ (t/cant "First-class modules" size3)
+ #:go (coord .8 .2 'cc)
+ (t/cant "Generic functions" size3)
+ #:go (coord .05 .9 'lc)
+ (t/cant "Better inference" size3))
+
+
+(pslide
+ #:go (coord .5 .5 'cc)
+ (t/section "Contracts")
+ #:go (coord .1 .1 'lt)
+ (t/cant "Polymorphic functions" size3)
+ #:go (coord .6 .7 'cc)
+ (t/cant "The Any type" size3)
+ #:go (coord .8 .2 'cc)
+ (t/cant "Performance" size3))
+
+
+(pslide
+ #:go (coord .5 .5 'cc)
+ (t/section "Extensibility")
+ #:go (coord .1 .1 'lt)
+ (t/cant "Complex extensions" size3)
+ #:go (coord .6 .7 'cc)
+ (t/cant "Unknown macros" size3)
+ #:go (coord .65 .3 'cc)
+ (t/cant "Communicating about optimization" size3)
  )
 
-(start)
+;; (define id-use
+;;   (code (require/typed poly [id (All (a) a -> a)])
+;;         (id 5)))
 
-;(slide #:title (titlet "Stronger Type Systems"))
+;; (slide #:title (titlet "Polymorphic Contracts")
+;;        #:layout 'center
+;;        (blank 30)
+;;        (smod #:name "poly"  #:width (pict-width id-use)
+;;              (code
+;;               (define (id x) 
+;;                 (cond [(number? x)
+;;                        (+ x 1)]
+;;                       [else x]))))
+;;        (tmod #:name "checked"
+;;              id-use)
+;;        (shadow-frame #:shadow-descent 10 (t/cant "A clear error")))
+
+;; (slide #:title (titlet "Polymorphic Contracts")
+;;        #:layout 'center
+;;        (blank 30)
+;;        (smod #:name "poly" #:width (pict-width id-use)
+;;              (code
+;;               (define (id x) 
+;;                 (cond [(number? x)
+;;                        (display x) x]
+;;                       [else x]))))
+;;        (tmod #:name "checked"
+;;              id-use)
+;;        (shadow-frame #:shadow-descent 10 (t/cant "What should this do?")))
+
+;; (define bv (code (define v (build-vector 10000
+;;                                          (lambda (i) (random))))))
 
 
-(define (hl p) (cc-superimpose (inset (cellophane (colorize (filled-rectangle (pict-width p) (pict-height p)) "pink") .7) -20)
-                               p))
 
-(define (as-string s)
-  (colorize ((current-code-tt) s) literal-color))
-(define (as-comment s)
-  (colorize ((current-code-tt) s) comment-color))
+;; (slide #:title (hbl-append (titlet "Contracts for ") (scale (code Any) 1.5))
+;;        #:layout 'center
+;;        (blank 30)
+;;        (tmod #:name "any" #:width (pict-width bv)
+;;              (code
+;;               (provide f)
+;;               (define f : Any 
+;;                 (lambda ([x : Number]) (+ x 1)))))
+;;        (smod #:name "contracted" #:width (pict-width bv)
+;;              (code (f 17)))
+;;        (shadow-frame #:shadow-descent 10 (t/cant "What contract do we generate?")))
+       
 
-(define (as-paren s)
-  (colorize ((current-code-tt) s) keyword-color))
 
-(define atsign
-  (inset (as-paren "@") 0 0 (- (pict-width (code | |))) 0))
+;; (slide #:title (titlet "Contract performance")
+;;        #:layout 'center
+;;        (blank 30)
+;;        (smod #:name "vector"
+;;              (code (define v (build-vector 10000
+;;                                            (lambda (i) (random))))))
+;;        (tmod #:name "any" #:width (pict-width bv)
+;;              (code
+;;               (require/typed vector
+;;                              [v (Vectorof Flonum)])
+;;               (for/sum ([i (in-vector v)])
+;;                 i)))
+;;        (shadow-frame #:shadow-descent 10 (t/cant "How do we make this fast?")))
+       
 
-(define neg
-  (inset (as-paren "") 0 0 (* 2 (- (pict-width (code | |)))) 0))
+;; #;
+;; (pslide/title
+;;  "New Compiler Techniques"
+;;  #:go (coord .1 .1 'lt)
+;;  (scale-to-fit (bitmap "pycket1.png") 1000 1200)
+;;  #:next #:go (coord 0 .4 'lt)
+;;  (scale-to-fit (bitmap "pycket-bench.png") (* 2/3 1400) (* 2/3 500))
+;;  )
 
-(define (as-datalog s)
-  (apply hbl-append
-         (for/list ([c s])
-           (case c
-             [(#\( #\) #\: #\- #\, #\. #\= #\?) (colorize ((current-code-tt) (string c)) keyword-color)]
-             [else (colorize ((current-code-tt) (string c)) id-color)]))))
+;; (start)
+
+;; ;(slide #:title (titlet "Stronger Type Systems"))
+
+
+;; (define (hl p) (cc-superimpose (inset (cellophane (colorize (filled-rectangle (pict-width p) (pict-height p)) "pink") .7) -20)
+;;                                p))
+
+;; (define (as-string s)
+;;   (colorize ((current-code-tt) s) literal-color))
+;; (define (as-comment s)
+;;   (colorize ((current-code-tt) s) comment-color))
+
+;; (define (as-paren s)
+;;   (colorize ((current-code-tt) s) keyword-color))
+
+;; (define atsign
+;;   (inset (as-paren "@") 0 0 (- (pict-width (code | |))) 0))
+
+;; (define neg
+;;   (inset (as-paren "") 0 0 (* 2 (- (pict-width (code | |)))) 0))
+
+;; (define (as-datalog s)
+;;   (apply hbl-append
+;;          (for/list ([c s])
+;;            (case c
+;;              [(#\( #\) #\: #\- #\, #\. #\= #\?) (colorize ((current-code-tt) (string c)) keyword-color)]
+;;              [else (colorize ((current-code-tt) (string c)) id-color)]))))
 
 #|
 (define (example-langs)
@@ -1063,17 +1103,16 @@
 (define (wrap-up [thanks? #f])
   (slide  #:layout 'center
          (shadow-frame
-          (vl-append
-           (t "Typed Racket is both a consumer of contracts")
-           (t "... and a driver of contract research"))
+          (vr-append
+           (t "Typed Racket requires language design at every level")
+           (t "... with more to come"))
           #:shadow-descent 10)
          (blank 15)
-         (t "Expressiveness, invariants, performance, proofs")
+         (t "")
          (blank 25)
          (show (scale (t/section "Thank you") 2) thanks?)
          (blank 15)
-         (show ((current-code-tt) "samth.github.io              racket-lang.org") thanks?)))
-
+         (show ((current-code-tt) "racket-lang.org") thanks?)))
 
 
 (wrap-up)

@@ -10,12 +10,18 @@
          "helper.rkt"
          racket/runtime-path (except-in mzlib/etc identity) unstable/gui/slideshow)
 
+(tslide* 
+ "Extensibility Design"
+ '("With Culpepper, St-Amour, Flatt, Felleisen"
+   "[SFP 08, PLDI 11]"))
+
+
+#;
 (tslide* (vl-append (t/section "Extensible Languages,")
                     (t/section "Extensible Compilers"))
          '("With Culpepper, St-Amour, Flatt, Felleisen"
            "[SFP 08, PLDI 11]"))
-
-
+#;
 (pslide/title 
  "The Traditional Approach to Compilers"
  #:go (coord 0.0 0.2 'lt)
@@ -26,7 +32,7 @@
  10
  (scale (bitmap "gcc.jpg") .45))
                    
-
+#;
 (slide/staged 
  [one two] #:title (title-t "The Macro Approach to Compilers")
  (hc-append 150
@@ -46,7 +52,7 @@
                                      (t "Modules")                                     
                                      ))
                   (> stage 1))))
-
+#;
 (parameterize (#;[current-font-size (+ 4 (current-font-size))])
  (slide #:title (title-t "The Typed Racket approach:")
   (blank 50)
@@ -141,7 +147,7 @@
 (slide #:title (title-t "Why Intermediate Languages?")
        (t "Most forms come from libraries")
        (ack-def #:define (red-code define) #:cond (red-code cond))
-       'next
+       ;'next
        (para "Also: pattern matching, keyword arguments, classes, loops, comprehensions, any many more")
        (subitem "Can't know static semantics ahead of time"))
 
@@ -190,52 +196,52 @@
                        #,(t "... two dozen core forms ..."))))))
 
 
-(slide #:title (title-t "Adding Optimization")
-       (smod #:name "typed/racket" #:lang (code racket) #:sizeof (cc-superimpose (inset bigm 0 -50) tr-mod)
-             (code
-              (define-syntax module-begin
-                (syntax-parser
-                 [(_ forms ...)
-                  #,(code (define expanded-forms
-                                #,(code (local-expand #'(forms ...)))))
-                  (for ([form #,(code expanded-forms)])
-                    (typecheck form))
-                  #,(red-code (define opt-forms (map optimize expanded-forms)))
-                  #,(red-code opt-forms)])))))
+;; (slide #:title (title-t "Adding Optimization")
+;;        (smod #:name "typed/racket" #:lang (code racket) #:sizeof (cc-superimpose (inset bigm 0 -50) tr-mod)
+;;              (code
+;;               (define-syntax module-begin
+;;                 (syntax-parser
+;;                  [(_ forms ...)
+;;                   #,(code (define expanded-forms
+;;                                 #,(code (local-expand #'(forms ...)))))
+;;                   (for ([form #,(code expanded-forms)])
+;;                     (typecheck form))
+;;                   #,(red-code (define opt-forms (map optimize expanded-forms)))
+;;                   #,(red-code opt-forms)])))))
 
 
-(slide/staged 
- [one three]
- #:title (title-t "Adding Optimization")
+;; (slide/staged 
+;;  [one three]
+;;  #:title (title-t "Adding Optimization")
  
- (pict-case stage-name
-   [(one) (para "Problem: generic arithmetic is slow")]
-   [(three) (para "Express guarantees as rewritings")])
- (pict-case 
-     stage-name
-   [(one) (code (: norm : Float Float -> Float)
-                (define (norm x y)
-                  (sqrt (+ (sqr x) (sqr y)))))]
-   [(two) (code (: norm : Float Float -> Float)
-                (define (norm x y)
-                  (#,(red-code flsqrt) 
-                   (fl+ (fl* x x) (fl* y y)))))]
-   [(three) (code (: norm : Float Float -> Float)
-                  (define (norm x y)
-                    (#,(red-code unsafe-flsqrt) 
-                     (#,(red-code unsafe-fl+) (#,(red-code unsafe-fl*) x x) 
-                                              (#,(red-code unsafe-fl*) y y)))))])
- (pict-case stage-name
-   [(three) (t "Low-level operations expose code generation to libraries")]
-   [else (blank)]))
+;;  (pict-case stage-name
+;;    [(one) (para "Problem: generic arithmetic is slow")]
+;;    [(three) (para "Express guarantees as rewritings")])
+;;  (pict-case 
+;;      stage-name
+;;    [(one) (code (: norm : Float Float -> Float)
+;;                 (define (norm x y)
+;;                   (sqrt (+ (sqr x) (sqr y)))))]
+;;    [(two) (code (: norm : Float Float -> Float)
+;;                 (define (norm x y)
+;;                   (#,(red-code flsqrt) 
+;;                    (fl+ (fl* x x) (fl* y y)))))]
+;;    [(three) (code (: norm : Float Float -> Float)
+;;                   (define (norm x y)
+;;                     (#,(red-code unsafe-flsqrt) 
+;;                      (#,(red-code unsafe-fl+) (#,(red-code unsafe-fl*) x x) 
+;;                                               (#,(red-code unsafe-fl*) y y)))))])
+;;  (pict-case stage-name
+;;    [(three) (t "Low-level operations expose code generation to libraries")]
+;;    [else (blank)]))
 
 
-(slide #:title (title-t "Performance results")
- (bitmap "padl12/shootout-benchmarks.png")
- (bitmap "padl12/macro-benchmarks.png")
- (t "Smaller is better"))
+;; (slide #:title (title-t "Performance results")
+;;  (bitmap "padl12/shootout-benchmarks.png")
+;;  (bitmap "padl12/macro-benchmarks.png")
+;;  (t "Smaller is better"))
 
-(slide #:title (title-t "Lessons")
-       (para "Language extensibility makes compilers into libraries")
-       (blank 50)
-       (para "See LMS, Scala macros, ..."))
+;; (slide #:title (title-t "Lessons")
+;;        (para "Language extensibility makes compilers into libraries")
+;;        (blank 50)
+;;        (para "See LMS, Scala macros, ..."))
