@@ -1222,8 +1222,9 @@
          #:arrow? #t)))
 
 ;; animations with pslide
-(define-syntax-rule (pslide/play [n] body ...)
-  (play (λ (n) (ppict-do ((pslide-base-pict)) body ...))))
+(require syntax/parse/define syntax/parse)
+(define-simple-macro (pslide/play kws ... [n:id] body ...)
+  (void (play kws ... (λ (n) (ppict-do ((pslide-base-pict)) body ...)))))
 
 (define-syntax-rule (pslide/play/staged [stage ...] [n] body ...)
   (staged [stage ...] (pslide/play [n] body ...)))

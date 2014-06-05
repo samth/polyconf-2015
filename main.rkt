@@ -10,6 +10,20 @@
          "helper.rkt"
          racket/runtime-path (except-in mzlib/etc identity) unstable/gui/slideshow)
 
+(pslide
+ #:go (coord .5 .5 'cc) 
+ (bitmap plt-background-path)
+ #:go (coord 0.05 .85 'lc)
+ (t/cant "Sam Tobin-Hochstadt" size2)
+ #:go (coord 0.95 .95 'rc)
+ (colorize (t/quat "Indiana University" size3)
+           "midnightblue")
+ #:go (coord 0.05 .15 'lc)
+ (t/cant "Typed Racket" size1)
+ #:go (coord 0.95 .25 'rc)
+ (t/quat "A playground for language design" size2))
+
+#;
 (title '("Typed Racket as a research agenda")
        '()
        '(("Sam Tobin-Hochstadt" "Indiana University"))
@@ -36,7 +50,7 @@
   (t/quat s size2))
 
 (pslide/title 
- "Typed Racket Goals"
+ "Typed Racket Design Goals"
  ;; FIXME: use `cascade` here, but needs lt instead of cc in bounding box
  #:go (coord 0.3 0.3)
  (shadow-frame (t "Typed sister language to Racket"))
