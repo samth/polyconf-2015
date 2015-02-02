@@ -1,44 +1,167 @@
 #lang slideshow
 
+
+
 (require slideshow/step slideshow/code slideshow/face 
          unstable/gui/ppict unstable/gui/pslide
          (only-in slideshow/slide title-size)
           "config.ss"
          (except-in "beamer.ss" title) "lib.ss" racket/gui  "thanks.ss" 
-         "tslide.ss" lang-slide "contracts.rkt"
+         "tslide.ss" lang-slide/hudak-quote "contracts.rkt"
          "ts-intro.rkt" "stages.rkt"
          "helper.rkt"
          racket/runtime-path (except-in mzlib/etc identity) unstable/gui/slideshow)
 
+(define (pic fname [r 1])
+  (pslide #:go (coord .5 .5 'cc)
+        (scale (bitmap fname) r)))
+
+(do-start? #f)
 (require ppict-slide-grid)
-(set-grid-base-pict!)
+;(set-grid-base-pict!)
 
 (pslide
  #:go (coord .5 .5 'cc) 
  (bitmap plt-background-path)
  #:go (coord 0.05 .85 'lc)
  (t/cant "Sam Tobin-Hochstadt" size2)
+ #:go (coord 0.05 .95 'rc)
+ (t/quat "Indiana University" size3)
  #:go (coord 0.95 .95 'rc)
- (colorize (t/quat "Indiana University" size3)
+ (colorize (t/quat "Hacker School" size3)
            "midnightblue")
  #:go (coord 0.05 .15 'lc)
- (t/cant "Typed Racket" size1)
+ (t/cant "Racket & Typed Racket" size1)
  #:go (coord 0.95 .25 'rc)
- (t/quat "A playground for language design" size2))
+ (t/quat "Programming with languages" size2))
 
-#;
-(title '("Typed Racket as a research agenda")
-       '()
-       '(("Sam Tobin-Hochstadt" "Indiana University"))
-       "May 27, 2014    Shonan")
-(set-page-numbers-visible! #t)
-(do-start? #f)
+#;(define (pic fname [r 1])
+  (pslide #:go (coord .5 .5 'cc)
+        (scale (bitmap fname) r)))
+
+(pic "IU.jpg" .25)
+
+(slide)
 
 
 (code-colorize-enabled #t)
-;(slide (langs-pict #t))
+
 
 (dynamic-require "intro.rkt" #f)
+
+(pic "typescript.png" .9)
+(pic "hack.png" .9)
+
+(tslide* "The rise of ... languages")
+
+(langs)
+
+(define (hl p) (cc-superimpose
+                (inset (cellophane (colorize (filled-rectangle (pict-width p) (pict-height p))
+                                             "pink") .7) -20)
+                                p))
+
+ (define (as-string s)
+   (colorize ((current-code-tt) s) literal-color))
+ (define (as-comment s)
+   (colorize ((current-code-tt) s) comment-color))
+
+ (define (as-paren s)
+   (colorize ((current-code-tt) s) keyword-color))
+
+ (define atsign
+   (inset (as-paren "@") 0 0 (- (pict-width (code | |))) 0))
+
+ (define neg
+   (inset (as-paren "") 0 0 (* 2 (- (pict-width (code | |)))) 0))
+
+ (define (as-datalog s)
+   (apply hbl-append
+          (for/list ([c s])
+            (case c
+              [(#\( #\) #\: #\- #\, #\. #\= #\?)
+               (colorize ((current-code-tt) (string c)) keyword-color)]
+              [else (colorize ((current-code-tt) (string c)) id-color)]))))
+
+(define (example-langs)
+  (slide/staged 
+   [racket slide web lazy scribble datalog typed]
+   (pict-case stage-name
+     [(racket) (code 
+                | #lang racket| (code:comment "An echo server")
+                (define listener (tcp-listen 12345))
+                (define (run)
+                  (define-values (in out) (tcp-accept listener))
+                  (thread (λ () (copy-port in out)
+                            (close-output-port out)))
+                  (run))
+                (run))]
+     [(slide)
+      (code |#lang slideshow|
+            (slide #:title "Hello PLDI"
+                   (item "Intro")
+                   (item "Racket")
+                   (item "Typed Racket")))]
+     [(web) 
+      (code |#lang web-server/insta|
+            (code:comment "A simple web server")
+            (define (start request)
+              (response/xexpr
+               '(html
+                 (body "Hello PLDI")))))]
+     [(lazy) 
+      (code |#lang lazy|
+            (code:comment "An infinite list:")
+            (define fibs
+              (list* 1 1 (map + fibs (cdr fibs))))
+            
+            (code:comment "Print the 1000th Fibonacci number:")
+            (print (list-ref fibs 1000)))]
+     [(scribble)
+      (code |#lang scribble/base|
+            #,(as-comment "@; Generate a PDF or HTML document")
+            #,atsign title #,neg{#,(as-string "Bottles ---") #,atsign italic #,neg{#,(as-string "Abridged")}}
+            #,atsign(apply itemlist
+                           (for/list ([n (in-range 100 0 -1)])
+                             #,atsign item #,neg{#,atsign(format "~a" n) #,(as-string "bottles.")})))]
+     [(datalog)
+      (code |#lang datalog|
+            #,(as-datalog "ancestor(A, B) :- parent(A, B).")
+            #,(as-datalog "ancestor(A, B) :-")
+            #,(as-datalog "  parent(A, C), D = C, ancestor(D, B).")
+            #,(as-datalog "parent(john, douglas).")
+            #,(as-datalog "parent(bob, john).")
+            #,(as-datalog "ancestor(A, B)?"))]
+     [(typed)
+      (code |# lang typed/racket|
+            (struct: person ([first : String]
+                             [|last | : String]))
+            (: greeting (person -> String))
+            (define (greeting n)
+              (format "~a ~a"
+                      (person-first n) (person-last n)))
+            (greeting (make-person "Bob" "Smith")))])
+   (pict-case stage-name #:combine cc-superimpose
+     [(typed) (t "Racket with static types and full interoperation")]
+     [(scribble) (t "A domain-specific language (and syntax) for documentation")]
+     [(datalog) (t "Integrated logic programming")]
+     [(racket) (t "A modern programming language")]
+     [(web) (t "A language for writing web servers")]
+     [(lazy) (t "Lazy evaluation")])))
+
+(example-langs)
+
+(pslide #:go (coord .35 .5 'cc)
+        (scale (bitmap "lastofus.jpg") 0.7)
+        ;#:next
+        #;#;#;
+        #:go (coord 1/3 3/4 'cc)
+        (shadow-frame (t/cant "Racket" 50)
+                      #:shadow-descent 5))
+
+(pic "cpb.jpg" .33)
+
+
 
 (require "class-slide.rkt")
 ;(class-slide '(1 2 3 4))
@@ -73,7 +196,7 @@
 (tslide* "Typed Racket Demo!")
 
 (tslide* "Type System Design"
-         '("With Takikawa, Strickland, Felleisen"
+         #;'("With Takikawa, Strickland, Felleisen"
            "[POPL 08, ESOP 09, ICFP 10, OOPSLA 12, ESOP 13]"))
 
 (define narrow1 (t/cant "Racket"))
@@ -205,7 +328,7 @@
                (mixin-impl))))
 
 
-(require "peano.rkt" "combine.rkt")
+(require (except-in "peano.rkt" pic) "combine.rkt")
 
 ;(peano1) (combine1)
 ;(peano2) ;(combine2)
@@ -254,7 +377,7 @@
 ;       (para "Repeated in TypeScript, Typed Clojure, Hack, ..."))
 
 (tslide* "Interoperation Design"
-         '("With Takikawa, Strickland, Flatt, Findler, Felleisen"
+         #;'("With Takikawa, Strickland, Flatt, Findler, Felleisen"
            "[DLS 06, ESOP 13, OOPSLA 12]"))
 
 (multi-sound)
@@ -436,7 +559,7 @@
 ;; PLDI + PADL
 #;
 (tslide* "And more ..."
-         '("With St-Amour, Dimoulas, Felleisen"
+         #;'("With St-Amour, Dimoulas, Felleisen"
            "[DLS 06, ESOP 12, OOPSLA 12]"))
 
 ;(slide #:title (titlet "Proof Techniques"))
@@ -446,10 +569,12 @@
     ;;  #:title (title-t "Proofs and Techniques")
     ;;  (pict-case
     ;;   stage-name       
-    ;;    [(one) (para "If the program raises a contract error, the blame is not assigned to a typed module.")]
+    ;;    [(one) (para "If the program raises a contract error, "
+    ;;                 "the blame is not assigned to a typed module.")]
     ;;    [(two) (para "Well-typed modules can't get blamed.")]
     ;;    [(three) (mini-slide
-    ;;              (para "Allows local reasoning about typed modules, without changing untyped modules.")
+    ;;              (para "Allows local reasoning about typed modules,"
+    ;;                      " without changing untyped modules.")
     ;;              (para "Choose how much static checking you want."))]
     ;;    [(four) (mini-slide
     ;;             (para "Closely connected to contract semantics")
@@ -575,95 +700,8 @@
 ;; ;(slide #:title (titlet "Stronger Type Systems"))
 
 
-;; (define (hl p) (cc-superimpose (inset (cellophane (colorize (filled-rectangle (pict-width p) (pict-height p)) "pink") .7) -20)
-;;                                p))
+ 
 
-;; (define (as-string s)
-;;   (colorize ((current-code-tt) s) literal-color))
-;; (define (as-comment s)
-;;   (colorize ((current-code-tt) s) comment-color))
-
-;; (define (as-paren s)
-;;   (colorize ((current-code-tt) s) keyword-color))
-
-;; (define atsign
-;;   (inset (as-paren "@") 0 0 (- (pict-width (code | |))) 0))
-
-;; (define neg
-;;   (inset (as-paren "") 0 0 (* 2 (- (pict-width (code | |)))) 0))
-
-;; (define (as-datalog s)
-;;   (apply hbl-append
-;;          (for/list ([c s])
-;;            (case c
-;;              [(#\( #\) #\: #\- #\, #\. #\= #\?) (colorize ((current-code-tt) (string c)) keyword-color)]
-;;              [else (colorize ((current-code-tt) (string c)) id-color)]))))
-
-#|
-(define (example-langs)
-  (slide/staged 
-   [racket slide web lazy scribble datalog typed]
-   (pict-case stage-name
-     [(racket) (code 
-                | #lang racket| (code:comment "An echo server")
-                (define listener (tcp-listen 12345))
-                (define (run)
-                  (define-values (in out) (tcp-accept listener))
-                  (thread (λ () (copy-port in out)
-                            (close-output-port out)))
-                  (run))
-                (run))]
-     [(slide)
-      (code | #lang slideshow|
-            (slide #:title "Hello PLDI"
-                   (item "Intro")
-                   (item "Racket")
-                   (item "Typed Racket")))]
-     [(web) 
-      (code | #lang web-server/insta|
-            (code:comment "A simple web server")
-            (define (start request)
-              (response/xexpr
-               '(html
-                 (body "Hello PLDI")))))]
-     [(lazy) 
-      (code | #lang lazy|
-            (code:comment "An infinite list:")
-            (define fibs
-              (list* 1 1 (map + fibs (cdr fibs))))
-            
-            (code:comment "Print the 1000th Fibonacci number:")
-            (print (list-ref fibs 1000)))]
-     [(scribble) (code | #lang scribble/base|
-                       #,(as-comment "@; Generate a PDF or HTML document")
-                       #,atsign title #,neg{#,(as-string "Bottles ---") #,atsign italic #,neg{#,(as-string "Abridged")}}
-                       #,atsign(apply itemlist
-                                      (for/list ([n (in-range 100 0 -1)])
-                                        #,atsign item #,neg{#,atsign(format "~a" n) #,(as-string "bottles.")})))]
-     [(datalog)
-      (code | #lang datalog|
-            #,(as-datalog "ancestor(A, B) :- parent(A, B).")
-            #,(as-datalog "ancestor(A, B) :-")
-            #,(as-datalog "  parent(A, C), D = C, ancestor(D, B).")
-            #,(as-datalog "parent(john, douglas).")
-            #,(as-datalog "parent(bob, john).")
-            #,(as-datalog "ancestor(A, B)?"))]
-     [(typed)
-      (code | # lang typed/racket|
-            (struct: person ([first : String]
-                             [|last | : String]))
-            (: greeting (person -> String))
-            (define (greeting n)
-              (format "~a ~a"
-                      (person-first n) (person-last n)))
-            (greeting (make-person "Bob" "Smith")))])
-   (pict-case stage-name #:combine cc-superimpose
-     [(typed) (t "Racket with static types and full interoperation")]
-     [(scribble) (t "A domain-specific language (and syntax) for documentation")]
-     [(datalog) (t "Integrated logic programming")]
-     [(racket) (t "A modern programming language")]
-     [(web) (t "A language for writing web servers")]
-     [(lazy) (t "Lazy evaluation")])))
 
 #;
 (example-langs)
@@ -770,7 +808,8 @@
 
 (define (bod p) (pin-over (ghost bigm) ack1 lt-find p))
 
-(slide/staged [one two three mb] #:title (pict-if (not (>= stage mb)) (titlet "Static Checking") (code module-begin))
+(slide/staged [one two three mb] 
+              #:title (pict-if (not (>= stage mb)) (titlet "Static Checking") (code module-begin))
        (pict-case stage-name
          [(one) (smod #:name "ack" 
                       (bod (code #,(ack-def #:typed #f)
@@ -808,7 +847,8 @@
              tr-mod))
 
 (slide #:title "Implementing a language"
-       (smod #:name "typed/racket" #:lang (code racket) #:sizeof (cc-superimpose (inset bigm 0 -50) tr-mod)
+       (smod #:name "typed/racket" #:lang (code racket)
+             #:sizeof (cc-superimpose (inset bigm 0 -50) tr-mod)
              (code
               (define-syntax module-begin
                 (syntax-parser
@@ -819,7 +859,8 @@
                   #'(forms ...)])))))
 
 (slide #:title "The Typechecker"
-       (smod #:name "typechecker" #:lang (code racket) #:sizeof (cc-superimpose (inset bigm 0 -50) tr-mod)
+       (smod #:name "typechecker" #:lang (code racket)
+             #:sizeof (cc-superimpose (inset bigm 0 -50) tr-mod)
              (code (define (typecheck form)
                      (syntax-parse form
                        [v:identifier 
@@ -844,7 +885,8 @@
        (t "Most forms come from libraries")
        (ack-def #:define (red-code define) #:cond (red-code cond))
        'next
-       (para "Also: pattern matching, keyword arguments, classes, loops, comprehensions, any many more")
+       (para (string-append "Also: pattern matching, keyword arguments,"
+                            " classes, loops, comprehensions, any many more"))
        (subitem "Can't know static semantics ahead of time"))
 
 (slide/staged [one] #:title "Core Racket" #:layout 'center
@@ -866,7 +908,8 @@
               )
 
 (slide #:title (code local-expand)
-       (smod #:name "typed/racket" #:lang (code racket) #:sizeof (cc-superimpose (inset bigm 0 -50) tr-mod)
+       (smod #:name "typed/racket" #:lang (code racket) #:sizeof (cc-superimpose (inset bigm 0 -50)
+                                                                                 tr-mod)
              (code
               (define-syntax module-begin
                 (syntax-parser
@@ -1095,7 +1138,7 @@
 
 
 
-|#
+
 |#
 
 (require unstable/gui/pict)
@@ -1104,8 +1147,8 @@
   (slide  #:layout 'center
          (shadow-frame
           (vr-append
-           (t "Typed Racket requires language design at every level")
-           (t "... with more to come"))
+           (t "Racket: build lots of languages")
+           (t "Typed Racket: gradual typing now!"))
           #:shadow-descent 10)
          (blank 15)
          (t "")
