@@ -40,7 +40,7 @@
                                  (bitmap plt-background-path))))
 (current-title-background-pict (bitmap plt-title-background-path))
 (current-base-color "black")
-(current-literal-color "black")
-(current-id-color "black")
-(current-comment-color "black")
+;(current-literal-color "black")
+;(current-id-color "black")
+;(current-comment-color "black")
 

@@ -11,6 +11,15 @@
          unstable/gui/slideshow)
 
 
+(tslide* "The Rise of Dynamic Languages")
+
+
+(define (i im lang [where (coord 3/4 3/4 'cc)] #:scale [scl 0.9])
+  (pslide #:go (coord -0.05 -0.05 'lt)
+          (scale (bitmap im) scl)
+          #:go where
+          (shadow-frame (t/cant lang 50)
+                        #:shadow-descent 5)))
 
 
 #;
@@ -22,12 +31,11 @@
                 (lambda () (blank 1024 768))])
 
 (pslide #:go (coord .5 .5 'cc)
-        (scale (bitmap "nyc.png") .9)
-        #:next
+        (scale (bitmap "poznan.png") .9)
+        ;#:next
         #:go (coord 3/4 3/4 'cc)
         (shadow-frame (t/cant "JavaScript" 50)
                       #:shadow-descent 5)))
-(tslide* "The Rise of Dynamic Languages")
 
 (pslide #:go (coord .5 .5 'cc)
         (scale (bitmap "angry-birds.png") 0.9)
@@ -43,6 +51,17 @@
         (shadow-frame (t/cant "Python" 50)
                       #:shadow-descent 5))
 
+;; swedish pension
+
+
+(pslide #:go (coord -0.05 -0.05 'lt)
+        (scale (bitmap "sweden2.png") 0.7)
+        ;#:next
+        #:go (coord 3/4 3/4 'cc)
+        (shadow-frame (t/cant "Perl" 50)
+                      #:shadow-descent 5))
+
+
 #;
 (pslide #:go (coord .5 .5 'cc)
         (scale (bitmap "epfl3.png") 1)
@@ -52,24 +71,24 @@
                       #:shadow-descent 5))
 
 
-  
-;; swedish pension
-(pslide #:go (coord -0.05 -0.05 'lt)
-        (scale (bitmap "sweden2.png") 0.7)
-        ;#:next
-        #:go (coord 3/4 3/4 'cc)
-        (shadow-frame (t/cant "Perl" 50)
-                      #:shadow-descent 5))
+(tslide* "The Rise of Static Languages")
 
+(i "twitter.png" "Scala" (coord 1/4 3/5 'cc))
+
+(i "haxl.png" "Haskell")
+
+(i "go.jpg" "Go" (coord 1/4 3/5 'cc) #:scale 0.7)
+
+(i "skylight.jpg" "Rust" #:scale 0.6)
   
   
-(slide #:layout 'center
-        (scale (t "“whipitupitude” —  Larry Wall") 1.6))
+;; (slide #:layout 'center
+;;         (scale (t "“whipitupitude” —  Larry Wall") 1.6))
 
- (tslide* "So what's the problem?")
+;;  (tslide* "So what's the problem?")
 
- (slide #:layout 'center
-        (scale (t "“whipitupitude” —  Larry Wall") 1.6))
+;;  (slide #:layout 'center
+;;         (scale (t "“whipitupitude” —  Larry Wall") 1.6))
   
   
 
